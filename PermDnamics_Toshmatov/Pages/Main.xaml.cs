@@ -9,9 +9,10 @@ namespace PermDnamics_Toshmatov.Pages
     {
         public MainWindow mainWindow;
 
-        public Main()
+        public Main(MainWindow mainWindow)
         {
             InitializeComponent();
+            this.mainWindow = mainWindow;
         }
 
         private void OpenPageChart(object sender, RoutedEventArgs e)

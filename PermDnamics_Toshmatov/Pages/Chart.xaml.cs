@@ -11,6 +11,8 @@ namespace PermDnamics_Toshmatov.Pages
 
     public partial class Chart : Page
     {
+        public Line averageLine;
+
         public MainWindow mainWindow;
 
         public double actualHeightCanvas = 0;
@@ -19,25 +21,11 @@ namespace PermDnamics_Toshmatov.Pages
 
         public DispatcherTimer dispatcher = new DispatcherTimer();
 
-        public Chart()
-        {
-            InitializeComponent();
-            this.mainWindow = mainWindow;
-            actualHeightCanvas = mainWindow.Height - 50d;
-
-            dispatherTimer.Interval = new TimeSpan(0, 0, 2);
-            dispatherTimer.Tick += CreateNewValue;
-            dispatherTimer.Start();
-
-            CreateChart();
-            ColorChart();
-
-        }
-
         //Функция создание графика
         public void CreateChart()
         {
             canvas.Children.Clear();
+            averageLine = null;
             for (int i = 0; i < mainWindow.pointsInfo.Count; i++)
             {
                 if (mainWindow.pointsInfo[i].value > maxValue)
@@ -56,6 +44,8 @@ namespace PermDnamics_Toshmatov.Pages
                 line.StrokeThickness = 2;
                 mainWindow.pointsInfo[i].line = line;
                 canvas.Children.Add(line);
+
+                DrawAverageLine();
             }
         }
 
@@ -70,6 +60,8 @@ namespace PermDnamics_Toshmatov.Pages
             line.StrokeThickness = 2;
             mainWindow.pointsInfo[(mainWindow.pointsInfo.Count - 1)].line = line;
             canvas.Children.Add(line);
+
+            DrawAverageLine();
         }
 
         //Функция управление графиком
@@ -86,6 +78,7 @@ namespace PermDnamics_Toshmatov.Pages
             }
 
             ColorChart();
+            DrawAverageLine();
         }
 
         //Функция управление цветом графика
@@ -109,6 +102,8 @@ namespace PermDnamics_Toshmatov.Pages
 
             current_value.Content = "Тек. знач: " + Math.Round(value, 2);
             average_value.Content = "Сред. знач: " + Math.Round(averageValue, 2);
+
+            DrawAverageLine();
         }
 
         //Функция пересоздание графика при изменениии размера
@@ -118,6 +113,7 @@ namespace PermDnamics_Toshmatov.Pages
 
             CreateChart();
             ColorChart();
+            DrawAverageLine();
         }
 
         //Создание графика генерации новых значений 
@@ -125,6 +121,7 @@ namespace PermDnamics_Toshmatov.Pages
 
         public Chart(MainWindow mainWindow)
         {
+            InitializeComponent();
             this.mainWindow = mainWindow;
             actualHeightCanvas = mainWindow.Height - 50d;
 
@@ -144,6 +141,30 @@ namespace PermDnamics_Toshmatov.Pages
             double newValue = value * (random.NextDouble() + 0.5d);
             mainWindow.pointsInfo.Add(new Classes.PointInfo(newValue));
             ControlCreateChart();
+
+            DrawAverageLine();
+
+        }
+
+
+        // Функция отображения среднего значения на графике
+        public void DrawAverageLine()
+        {
+            if (averageLine != null)
+                canvas.Children.Remove(averageLine);
+
+            averageLine = new Line();
+            averageLine.X1 = 0;
+            averageLine.X2 = scroll.ViewportWidth;  
+
+            double averageY = actualHeightCanvas - ((averageValue / maxValue) * actualHeightCanvas);
+            averageLine.Y1 = averageY;
+            averageLine.Y2 = averageY;
+
+            averageLine.Stroke = Brushes.Green;
+            averageLine.StrokeThickness = 2;
+
+            canvas.Children.Add(averageLine);
         }
     }
 }
