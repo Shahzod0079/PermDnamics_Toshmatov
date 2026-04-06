@@ -21,6 +21,11 @@ namespace PermDnamics_Toshmatov.Pages
         public double maxValue = 0;
         double averageValue = 0;
 
+        public double maxVolatility = 0;
+        public double averageVolatility = 0;
+        public Line averageLineVolatility;
+
+
         public DispatcherTimer dispatcher = new DispatcherTimer();
 
         //Функция создание графика
@@ -28,11 +33,13 @@ namespace PermDnamics_Toshmatov.Pages
         {
             canvas.Children.Clear();
             averageLine = null;
+
             for (int i = 0; i < mainWindow.pointsInfo.Count; i++)
             {
                 if (mainWindow.pointsInfo[i].value > maxValue)
                     maxValue = mainWindow.pointsInfo[i].value;
             }
+
             for (int i = 0; i < mainWindow.pointsInfo.Count; i++)
             {
                 Line line = new Line();
@@ -46,9 +53,9 @@ namespace PermDnamics_Toshmatov.Pages
                 line.StrokeThickness = 2;
                 mainWindow.pointsInfo[i].line = line;
                 canvas.Children.Add(line);
-
-                DrawAverageLine();
             }
+
+            DrawAverageLine(); 
         }
 
         //Функция создание отдльной точки
@@ -63,7 +70,7 @@ namespace PermDnamics_Toshmatov.Pages
             mainWindow.pointsInfo[(mainWindow.pointsInfo.Count - 1)].line = line;
             canvas.Children.Add(line);
 
-            DrawAverageLine();
+            DrawAverageLine(); 
         }
 
         //Функция управление графиком
@@ -99,7 +106,7 @@ namespace PermDnamics_Toshmatov.Pages
                     mainWindow.pointsInfo[i].line.Stroke = Brushes.Green;
             }
 
-            canvas.Width = mainWindow.pointsInfo.Count * 20 + 300;
+            //canvas.Width = mainWindow.pointsInfo.Count * 20 + 300;
             scroll.ScrollToHorizontalOffset(canvas.Width);
 
             current_value.Content = "Тек. знач: " + Math.Round(value, 2);
@@ -116,6 +123,7 @@ namespace PermDnamics_Toshmatov.Pages
             CreateChart();
             ColorChart();
             DrawAverageLine();
+            DrawAverageLineVolatility();
         }
 
         //Создание графика генерации новых значений 
@@ -125,7 +133,9 @@ namespace PermDnamics_Toshmatov.Pages
         {
             InitializeComponent();
             this.mainWindow = mainWindow;
-            actualHeightCanvas = mainWindow.Height - 50d;
+
+            if (mainWindow.pointsVolatility.Count == 0)
+                mainWindow.pointsVolatility.Add(new Classes.PointInfo(0));
 
             dispatherTimer.Interval = new TimeSpan(0, 0, 2);
             dispatherTimer.Tick += CreateNewValue;
@@ -133,6 +143,7 @@ namespace PermDnamics_Toshmatov.Pages
 
             CreateChart();
             ColorChart();
+            CreateVolatilityChart();
         }
 
         private void CreateNewValue(object sender, EventArgs e)
@@ -142,33 +153,42 @@ namespace PermDnamics_Toshmatov.Pages
             double value = mainWindow.pointsInfo[mainWindow.pointsInfo.Count - 1].value;
             double newValue = value * (random.NextDouble() + 0.5d);
             mainWindow.pointsInfo.Add(new Classes.PointInfo(newValue));
+
+            // Волатильность = отклонение от среднего
+            double avg = mainWindow.pointsInfo.Average(p => p.value);
+            double volatility = Math.Abs(newValue - avg) / avg * 100;
+            mainWindow.pointsVolatility.Add(new Classes.PointInfo(volatility));
+
             ControlCreateChart();
-
-            DrawAverageLine();
-
+            CreateVolatilityChart();
         }
 
 
         // Функция отображения среднего значения на графике
         public void DrawAverageLine()
         {
-            if (averageLine != null)
-                canvas.Children.Remove(averageLine);
+            if (averageLine != null) canvas.Children.Remove(averageLine);
+
+            // Ширина = видимая область ScrollViewer (или ActualWidth Canvas, если она фиксирована)
+            double width = scroll.ViewportWidth;
+            if (width <= 0) width = mainWindow.ActualWidth - 50;
+            if (maxValue == 0) return;
 
             averageLine = new Line();
             averageLine.X1 = 0;
-            averageLine.X2 = scroll.ViewportWidth;  
+            averageLine.X2 = width;
 
-            double averageY = actualHeightCanvas - ((averageValue / maxValue) * actualHeightCanvas);
+            double height = actualHeightCanvas;
+            double averageY = height - ((averageValue / maxValue) * height);
+            averageY = Math.Max(0, Math.Min(height, averageY)); // не выходить за пределы
+
             averageLine.Y1 = averageY;
             averageLine.Y2 = averageY;
-
             averageLine.Stroke = Brushes.Green;
             averageLine.StrokeThickness = 2;
 
             canvas.Children.Add(averageLine);
         }
-
 
         //Для оценки хорошо
         // Функция сохранения графика в БД
@@ -220,5 +240,64 @@ namespace PermDnamics_Toshmatov.Pages
                 }
             }
         }
+        //Для оценки Отлично
+        //Функция создание фторого графика
+        public void CreateVolatilityChart()
+        {
+            canvasVolatility.Children.Clear();
+            averageLineVolatility = null;
+
+            if (mainWindow.pointsVolatility.Count == 0) return;
+
+            double max = mainWindow.pointsVolatility.Max(v => v.value);
+            if (max > maxVolatility) maxVolatility = max;
+            if (maxVolatility == 0) maxVolatility = 1;
+
+            for (int i = 0; i < mainWindow.pointsVolatility.Count; i++)
+            {
+                Line line = new Line();
+                line.X1 = i * 20;
+                line.X2 = (i + 1) * 20;
+
+                double height = 200;
+                if (i == 0)
+                    line.Y1 = height;
+                else
+                    line.Y1 = height - ((mainWindow.pointsVolatility[i - 1].value / maxVolatility) * height);
+                line.Y2 = height - ((mainWindow.pointsVolatility[i].value / maxVolatility) * height);
+
+                line.StrokeThickness = 2;
+                line.Stroke = Brushes.Orange;
+                mainWindow.pointsVolatility[i].line = line;
+                canvasVolatility.Children.Add(line);
+            }
+
+            DrawAverageLineVolatility();
+        }
+        //Функция создние линию среднего для волатильности
+        public void DrawAverageLineVolatility()
+        {
+            if (averageLineVolatility != null) canvasVolatility.Children.Remove(averageLineVolatility);
+            if (mainWindow.pointsVolatility.Count == 0) return;
+
+            double width = scroll.ViewportWidth;
+            if (width <= 0) width = mainWindow.ActualWidth - 50;
+            if (maxVolatility == 0) return;
+
+            averageVolatility = mainWindow.pointsVolatility.Average(v => v.value);
+            double avgY = 200 - ((averageVolatility / maxVolatility) * 200);
+            avgY = Math.Max(0, Math.Min(200, avgY)); // не выходить за пределы
+
+            averageLineVolatility = new Line();
+            averageLineVolatility.X1 = 0;
+            averageLineVolatility.X2 = width;
+            averageLineVolatility.Y1 = avgY;
+            averageLineVolatility.Y2 = avgY;
+            averageLineVolatility.Stroke = Brushes.Blue;
+            averageLineVolatility.StrokeThickness = 2;
+
+            canvasVolatility.Children.Add(averageLineVolatility);
+        }
+
     }
 }

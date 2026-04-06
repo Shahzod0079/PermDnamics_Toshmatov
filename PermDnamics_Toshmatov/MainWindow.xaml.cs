@@ -10,6 +10,7 @@ namespace PermDnamics_Toshmatov
     {
 
         public List<Classes.PointInfo> pointsInfo = new List<Classes.PointInfo>();
+        public List<Classes.PointInfo> pointsVolatility = new List<Classes.PointInfo>();
 
         public enum Pages
         {

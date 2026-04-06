@@ -13,7 +13,10 @@
             <ImageBrush ImageSource="C:\Users\ЗС\OneDrive\Рабочий стол\PermDnamics_Toshmatov\PermDnamics_Toshmatov\Images\chart.png" />
         </Grid.Background>
         <ScrollViewer x:Name="scroll" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Hidden">
-            <Canvas x:Name="canvas" Margin="10,10,10,10" HorizontalAlignment="Left"/>
+            <StackPanel>
+                <Canvas x:Name="canvas" Width="793.6" Height="200" Margin="0,0,10,5" Background="#1E000000"/>
+                <Canvas x:Name="canvasVolatility" Width="793.6"  Height="200" Margin="-10,15,0,0" Background="#1E000000"/>
+            </StackPanel>
         </ScrollViewer>
         <Grid Width="200" Height="100" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="10,0,0,10" Background="#7FFFFFFF">
             <Label x:Name="current_value" Content="Тек. знач:" Margin="10,10,10,0" VerticalAlignment="Top" />
