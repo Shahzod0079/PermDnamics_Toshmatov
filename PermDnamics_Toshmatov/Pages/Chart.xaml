@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:PermDnamics_Toshmatov.Pages"
       mc:Ignorable="d" 
       d:DesignHeight="420" d:DesignWidth="793.6"
-      Title="Chart" SizeChanged="Page SizeChanged" >
+      Title="Chart" SizeChanged="Page_SizeChanged" >
 
     <Grid>
         <Grid.Background>
@@ -17,7 +17,7 @@
         </ScrollViewer>
         <Grid Width="200" Height="100" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="10,0,0,10" Background="#7FFFFFFF">
             <Label x:Name="current_value" Content="Тек. знач:" Margin="10,10,10,0" VerticalAlignment="Top" />
-            <Label x:Name="avarage_value" Content="Сред. знач:" Margin="10,36,10,0" VerticalAlignment="Top" />
+            <Label x:Name="average_value" Content="Сред. знач:" Margin="10,36,10,0" VerticalAlignment="Top" />
 
         </Grid>
         

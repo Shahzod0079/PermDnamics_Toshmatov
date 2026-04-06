@@ -18,11 +18,28 @@ namespace PermDnamics_Toshmatov
 
     public partial class MainWindow : Window
     {
-        public List<Classes.PointInfo> pointInfo = new List<Classes.PointInfo>();
+
+        public List<Classes.PointInfo> pointsInfo = new List<Classes.PointInfo>();
+
+        public enum Pages
+        {
+            main,
+            chart
+        }
 
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        public void OpenPages(Pages _pages)
+        {
+            switch (page)
+            {
+                case Pages.chart:
+                    frame.Navigate(new Pages.Chart(this));
+                    break;
+            }
         }
     }
 }
