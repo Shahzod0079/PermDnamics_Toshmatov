@@ -24,5 +24,12 @@ namespace PermDnamics_Toshmatov.Pages
         {
             InitializeComponent();
         }
+
+        private void OpenPageChart (object sender, RoutedEventArgs e)
+        {
+            float value = Convert.ToUInt32(tb_value.Text);
+            mainWindow.pointsInfo.Add(new Classes.PointInfo(value));
+            mainWindow.OpenPages(MainWindow.pages.chart);
+        }
     }
 }
