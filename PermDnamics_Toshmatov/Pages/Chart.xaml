@@ -21,8 +21,9 @@
 
         </Grid>
         <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,10,10" Background="#7FFFFFFF">
-            <Button x:Name="btnSave" Content="Сохранить график" Height="30" Width="120" Margin="5" Click="SaveChart_Click"/>
-            <Button x:Name="btnLoad" Content="Загрузить график" Height="30" Width="120" Margin="5" Click="LoadChart_Click"/>
+            <TextBox x:Name="tbSaveName" Text="График" Width="120" Height="25" Margin="5"/>
+            <Button x:Name="btnSave" Content="Сохранить" Height="30" Width="100" Margin="5" Click="SaveChart_Click"/>
+            <Button x:Name="btnLoad" Content="Загрузить" Height="30" Width="100" Margin="5" Click="LoadChart_Click"/>
         </StackPanel>
 
     </Grid>

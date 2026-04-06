@@ -5,6 +5,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using PermDnamics_Toshmatov.Models;
+
 
 namespace PermDnamics_Toshmatov.Pages
 {
@@ -165,6 +167,58 @@ namespace PermDnamics_Toshmatov.Pages
             averageLine.StrokeThickness = 2;
 
             canvas.Children.Add(averageLine);
+        }
+
+
+        //Для оценки хорошо
+        // Функция сохранения графика в БД
+        private void SaveChart_Click(object sender, RoutedEventArgs e)
+        {
+            string name = Microsoft.VisualBasic.Interaction.InputBox("Введите название:", "Сохранение", "График_" + DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+            if (string.IsNullOrEmpty(name)) return;
+
+            string data = string.Join(",", mainWindow.pointsInfo.Select(p => p.value));
+
+            using (var db = new ChartContext())
+            {
+                db.Database.EnsureCreated();
+                db.ChartSaves.Add(new ChartSave { Name = name, Data = data, SaveDate = DateTime.Now });
+                db.SaveChanges();
+            }
+            MessageBox.Show("Сохранено!");
+        }
+
+        // Функция загрузка из БД
+        private void LoadChart_Click(object sender, RoutedEventArgs e)
+        {
+            using (var db = new ChartContext())
+            {
+                var charts = db.ChartSaves.OrderByDescending(c => c.SaveDate).ToList();
+                if (charts.Count == 0)
+                {
+                    MessageBox.Show("Нет графиков");
+                    return;
+                }
+
+                string names = string.Join("\n", charts.Select((c, i) => $"{i + 1}. {c.Name}"));
+                string input = Microsoft.VisualBasic.Interaction.InputBox($"Выберите номер:\n{names}", "Загрузка", "1");
+
+                if (int.TryParse(input, out int index) && index >= 1 && index <= charts.Count)
+                {
+                    var selected = charts[index - 1];
+                    var values = selected.Data.Split(',').Select(double.Parse).ToList();
+
+                    mainWindow.pointsInfo.Clear();
+                    foreach (var val in values)
+                        mainWindow.pointsInfo.Add(new Classes.PointInfo(val));
+
+                    maxValue = values.Max();
+                    CreateChart();
+                    ColorChart();
+                    DrawAverageLine();
+                    MessageBox.Show("Загружено!");
+                }
+            }
         }
     }
 }
